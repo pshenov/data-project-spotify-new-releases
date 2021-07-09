@@ -4,23 +4,19 @@ import requests
 from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dags.private import private_token, private_database, private_user_id
 
 
-TOKEN = private_token
-DATABASE = private_database
-USER_ID = private_user_id
-
-
-# Check if dataframe is empty
 def check_date(df: pd.DataFrame):
     if df.empty:
         print('No new releases available ')
 
 
-if __name__ == "__main__":
+def run_etl_spotify():
+    TOKEN = 'BQBP_0gsm5AExJbGiEFx9xErTAYqJPAzYCAUzL1DrJvKhH' \
+            '-8y9R1MEzIfDsLFXQwV7xk0f78Awg6PRmZTjIUW7jGkny3grtjNU1LzvQIEuQDVGjOavI0VV_v9if9fYvglNlt_jIQ8HKAExxECxv6N2JEcqwHno4 '
+    DATABASE = 'postgresql+psycopg2://postgres:Platon1811@localhost:5432/spotify_new_releases'
+    USER_ID = '313yvvcquaouh7egkl46adg7ktbq'
 
-# Extracting data using the Spotify API
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -28,6 +24,8 @@ if __name__ == "__main__":
     }
 
     req = requests.get(f'https://api.spotify.com/v1/browse/new-releases?country=RU&limit=50', headers=headers)
+
+    print(req)
 
     data = req.json()
 
@@ -52,7 +50,7 @@ if __name__ == "__main__":
         'total_tracks': total_tracks,
     }
 
-# Creating a dataframe with new releases
+    # Creating a dataframe with new releases
     release_df = pd.DataFrame(song_release, columns=['artist_name', 'release_date',
                                                      'song_name', 'album_type', 'total_tracks'])
     print(release_df.head())
@@ -60,7 +58,7 @@ if __name__ == "__main__":
     if check_date(release_df):
         print('Data valid')
 
-# Setting up a connection to the database
+    # Setting up a connection to the database
     engine = sqlalchemy.create_engine(DATABASE)
     connection = engine.connect()
 
@@ -69,7 +67,7 @@ if __name__ == "__main__":
 
     Base = declarative_base()
 
-# Creating new table using Declarative Class from sqlalchemy
+    # Creating new table using Declarative Class from sqlalchemy
     class NewReleases(Base):
         __tablename__ = 'spotify_new_releases'
 
@@ -79,10 +77,9 @@ if __name__ == "__main__":
         album_type = Column(String)
         total_tracks = Column(String)
 
-
     Base.metadata.create_all(engine)
 
-# Load data to the database
+    # Load data to the database
     try:
         release_df.to_sql('spotify_new_releases', engine, index=False, if_exists='append')
     except:
@@ -92,19 +89,3 @@ if __name__ == "__main__":
     session.close()
     connection.close()
     print('Close database successfully')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
