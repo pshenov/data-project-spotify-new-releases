@@ -1,3 +1,5 @@
 dags/private.py
 # Project exclude paths
 /venv/
+/screen/
+
