@@ -3,7 +3,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-from etl_spotif import get_tracks, save_tracks_to_db
+from etl_spotify import get_tracks, save_tracks_to_db
 
 with DAG(dag_id='etl_spotify',
          start_date=datetime(2021, 7, 1),
